@@ -9,35 +9,26 @@ using System.Windows;
 using System.Windows.Input;
 using MandalorianDB.BusinessLayer;
 using MandalorianDB.DataLayer;
+using MandalorianDB.Model;
 
 namespace MandalorianDB.ViewModel
 {
 
-    class MainWindowViewModel : ObservableObject
+    class JessViewModel : ObservableObject
     {
         #region Commands
-        public ICommand SearchEpisodeCommand
-        {
-            get { return new DelegateCommand(OnSearchEpisode); }
-        }
-        public ICommand AddEpisodeCommand
-        {
-            get { return new DelegateCommand(OnAddEpisode); }
-        }
-        public ICommand DeleteEpisodeCommand
-        {
-            get { return new DelegateCommand(OnDeleteEpisode); }
-        }
+        public ICommand SearchEpisodeCommand { get; set; }
 
-        public ICommand QuitApplicationCommand
-        {
-            get { return new DelegateCommand(OnQuitApplication); }
-        }
+        public ICommand AddEpisodeCommand { get; set; }
 
-        public ICommand SortListByEpisodeNumberCommand
-        {
-            get { return new DelegateCommand(OnSortListByDirector); }
-        }
+        public ICommand DeleteEpisodeCommand { get; set; }
+
+
+        public ICommand QuitApplicationCommand { get; set; }
+
+
+        public ICommand SortAscending { get; set; }
+        public ICommand SortListByDirectorCommand { get; set; }
         #endregion
 
         #region Field
@@ -45,7 +36,19 @@ namespace MandalorianDB.ViewModel
         private Episode _selectedEpisode;
         private Episode _episodeToAdd;
         private Episode _episodeToSearch;
-
+        public  JessViewModel()
+        {
+            Episodes = new ObservableCollection<Episode>(SessionData.GetEpisodeList());
+            if (Episodes.Any()) SelectedEpisode = Episodes[0];
+      
+           //ButtonAddCommand = new RelayCommand(new Action<object>(EpisodeToAdd()));
+           // ButtonEditCommand = new RelayCommand(new Action<object>(EditEpisode()));
+            SortAscending = new RelayCommand(new Action<object>(SortAsc));
+            // RadioCommandSortDesc = new RelayCommand(new Action<object>(SortDesc));
+            SortListByDirectorCommand = new RelayCommand(new Action<object>(OnSortListByDirector));
+            //ButtonSearchCommand = new RelayCommand(new Action<object>(Search));
+            QuitApplicationCommand = new RelayCommand(new Action<object>(OnQuitApplication));
+         }
         #endregion
 
         #region Properties
@@ -62,7 +65,7 @@ namespace MandalorianDB.ViewModel
             {
                 if (_selectedEpisode == value) { return; }
                 _selectedEpisode = value;
-                OnPropertyChanged("SelectedEpisode");
+                OnPropertyChanged(nameof(SelectedEpisode));
             }
         }
         public Episode EpisodeToAdd
@@ -71,7 +74,7 @@ namespace MandalorianDB.ViewModel
             set
             {
                 _episodeToAdd = value;
-                OnPropertyChanged("SelectedEpisode");
+                OnPropertyChanged(nameof(EpisodeToAdd));
             }
 
         }
@@ -86,7 +89,8 @@ namespace MandalorianDB.ViewModel
         #region Method
         private void OnSearchEpisode()
         {
-            
+           
+          
         }
         private void OnAddEpisode()
         {
@@ -100,21 +104,26 @@ namespace MandalorianDB.ViewModel
                 _episodes.Remove(_selectedEpisode);
             }
         }
-        private void OnQuitApplication()
+        private void OnQuitApplication(object parameter)
         {
             //
             // call a house keeping method in the business class
             //
             System.Environment.Exit(1);
         }
-        private void OnSortListByDirector()
+        private void SortAsc(object parameter)
         {
-            _episodes = new ObservableCollection<Episode>(_episodes.OrderBy(c => c.Director));
+            Episodes = new ObservableCollection<Episode>(Episodes.OrderBy(x => x.EpisodeNumber).ToList());
+
+
+        }
+        private void OnSortListByDirector(Object parameter)
+        {
+            Episodes = new ObservableCollection<Episode>(Episodes.OrderBy(x => x.Director).ToList());
         }
         #endregion
-        public MainWindowViewModel()
-        {
-            _episodes = new ObservableCollection<Episode>(SessionData.GetEpisodeList());
-        }
+      
+       
+
     }
 }
